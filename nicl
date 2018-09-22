@@ -1,0 +1,81 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import calendar
+import datetime
+import sys
+from datetime import date, timedelta
+import argparse
+import dateparser
+from datetime import date
+
+META = '\33[90m'
+TODAY = '\33[7m'
+WEEKEND = '\033[36m'
+CEND = '\033[0m'
+
+def color(text, color):
+    return color+text+CEND if sys.stdout.isatty() else text
+
+def formatmonth(date, highlight, current=False, weeknumbers=False, w=0):
+    theyear = date.year
+    themonth = date.month
+    firstweeknumber = date.replace(day=1).isocalendar()[1] if weeknumbers else -100
+    weekcolumn = ' № ' if weeknumbers else ''
+    weekpadding = 3 if weeknumbers else 0
+    day = date.day if current else 0
+    highlightdays = [x.day for x in highlight if x.year == theyear and x.month == themonth]
+
+    w = max(2, w)
+    s = []
+    s.append(color(cal.formatmonthname(theyear, themonth, 7 * (w + 1) + weekpadding - 1), META))
+    s.append(color(cal.formatweekheader(w).rstrip() + weekcolumn, META))
+    for i,week in enumerate(cal.monthdays2calendar(theyear, themonth)):
+        s.append(formatweek(week, highlightdays, firstweeknumber + i, day, w).rstrip())
+    return s
+
+def formatweek(theweek, highlightdays, weeknumber, day, width):
+    weekcolumn = color(" %2i" % weeknumber, META) if weeknumber>0 else ''
+    return ' '.join(formatday(highlightdays, d, wd, day, width) for (d, wd) in theweek) + weekcolumn
+
+def formatday(highlightdays, day, weekday, today, width):
+    if day == 0:
+        s = ''
+    elif day == today:
+        s = color('%2i' % day, TODAY)
+    elif day in highlightdays or weekday > 4:
+        s = color('%2i' % day, WEEKEND)
+    else:
+        s = '%2i' % day
+    return s.center(width)
+
+parser = argparse.ArgumentParser(description='Nicer Calendar for your terminal')
+parser.add_argument('date', nargs="*", default=None, help='Human readable date')
+parser.add_argument('-3', '--three',  action='store_true', help='Display three months spanning the date.')
+parser.add_argument('-w', '--weeknumbers',  action='store_true', help='Display week numbers in the calendar')
+parser.add_argument('-s', '--sunday',  action='store_true', help='Display Sunday as the first day of the week')
+parser.add_argument('-f', '--file', help='File with dates to highlight')
+parser.add_argument('-d', '--format', default='%d.%m.%Y', help='Format of date in file')
+args = parser.parse_args()
+
+firstweekday = 6 if args.sunday else 0
+dateformat = args.format
+
+highlight = []
+if args.file:
+    with open(args.file, 'r') as myfile:
+        for line in myfile.readlines():
+            highlight.append(datetime.datetime.strptime(line.strip(), dateformat))
+
+cal = calendar.TextCalendar(firstweekday)
+today = datetime.datetime.today() if len(args.date)==0 else dateparser.parse(' '.join(args.date), settings={'PREFER_DAY_OF_MONTH': 'first'})
+
+this = formatmonth(today, highlight, current=True, weeknumbers=args.weeknumbers)
+
+if not args.three:
+    print("\n".join(this))
+else:
+    prev = formatmonth(today.replace(day=1) - timedelta(days=1), highlight, weeknumbers=args.weeknumbers)
+    neht = formatmonth(today.replace(day=1) + timedelta(days=31), highlight, weeknumbers=args.weeknumbers)
+    for i in range (0,7):
+        print("%-20s   %-20s   %s" % (prev[i], this[i], neht[i]))
