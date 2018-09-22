@@ -1,4 +1,6 @@
-# NiCl 
+# NiCl
+
+![NiCl](https://developer.run/pic/nicl.png)
 
 NiCl - nicer calendar for your terminal. Like [cal](https://linux.die.net/man/1/cal) but nicer:
 
