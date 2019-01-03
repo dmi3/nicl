@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-import datetime
 import sys
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import argparse
 import dateparser
-from datetime import date
+import re
 
 META = '\33[90m'
 TODAY = '\33[7m'
-WEEKEND = '\033[36m'
-CEND = '\033[0m'
+WEEKEND = '\33[36m'
+CEND = '\33[0m'
 
 def color(text, color):
     return color+text+CEND if sys.stdout.isatty() else text
@@ -35,7 +34,7 @@ def formatmonth(date, highlight, current=False, weeknumbers=False, w=0):
     return s
 
 def formatweek(theweek, highlightdays, weeknumber, day, width):
-    weekcolumn = color(" %2i" % weeknumber, META) if weeknumber>0 else ''
+    weekcolumn = color(" %i" % weeknumber, META) if weeknumber>0 else ''
     return ' '.join(formatday(highlightdays, d, wd, day, width) for (d, wd) in theweek) + weekcolumn
 
 def formatday(highlightdays, day, weekday, today, width):
@@ -48,6 +47,13 @@ def formatday(highlightdays, day, weekday, today, width):
     else:
         s = '%2i' % day
     return s.center(width)
+
+def align(lines, pos, length):
+    text = "" if len(lines)<=pos else lines[pos]
+    printable = re.sub("\33\[\d{1,2}m","", text)
+    for i in range(0, length-len(printable)):
+        text+=" "
+    return text
 
 parser = argparse.ArgumentParser(description='Nicer Calendar for your terminal')
 parser.add_argument('date', nargs="*", default=None, help='Human readable date')
@@ -65,17 +71,19 @@ highlight = []
 if args.file:
     with open(args.file, 'r') as myfile:
         for line in myfile.readlines():
-            highlight.append(datetime.datetime.strptime(line.strip(), dateformat))
+            highlight.append(datetime.strptime(line.strip(), dateformat))
 
 cal = calendar.TextCalendar(firstweekday)
-today = datetime.datetime.today() if len(args.date)==0 else dateparser.parse(' '.join(args.date), settings={'PREFER_DAY_OF_MONTH': 'first'})
+today = datetime.today() if len(args.date)==0 else dateparser.parse(' '.join(args.date), settings={'PREFER_DAY_OF_MONTH': 'first'})
 
 this = formatmonth(today, highlight, current=True, weeknumbers=args.weeknumbers)
 
 if not args.three:
     print("\n".join(this))
 else:
+    l = 24 if args.weeknumbers else 21
     prev = formatmonth(today.replace(day=1) - timedelta(days=1), highlight, weeknumbers=args.weeknumbers)
     neht = formatmonth(today.replace(day=1) + timedelta(days=31), highlight, weeknumbers=args.weeknumbers)
-    for i in range (0,7):
-        print("%-20s   %-20s   %s" % (prev[i], this[i], neht[i]))
+    rows = max(len(prev), len(this), len(neht))
+    for i in range (0, rows):
+        print(align(prev, i, l), align(this, i, l), align(neht, i, l))
