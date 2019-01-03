@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import calendar
-import sys
+from calendar import TextCalendar
 from datetime import date, timedelta, datetime
+import sys
 import argparse
 import dateparser
 import re
@@ -73,7 +73,7 @@ if args.file:
         for line in myfile.readlines():
             highlight.append(datetime.strptime(line.strip(), dateformat))
 
-cal = calendar.TextCalendar(firstweekday)
+cal = TextCalendar(firstweekday)
 today = datetime.today() if len(args.date)==0 else dateparser.parse(' '.join(args.date), settings={'PREFER_DAY_OF_MONTH': 'first'})
 
 this = formatmonth(today, highlight, current=True, weeknumbers=args.weeknumbers)
