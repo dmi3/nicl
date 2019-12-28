@@ -3,6 +3,7 @@
 
 from calendar import TextCalendar
 from datetime import date, timedelta, datetime
+import os
 import sys
 import argparse
 import dateparser
@@ -85,5 +86,16 @@ else:
     prev = formatmonth(today.replace(day=1) - timedelta(days=1), highlight, weeknumbers=args.weeknumbers)
     neht = formatmonth(today.replace(day=1) + timedelta(days=31), highlight, weeknumbers=args.weeknumbers)
     rows = max(len(prev), len(this), len(neht))
-    for i in range (0, rows):
-        print(align(prev, i, l), align(this, i, l), align(neht, i, l))
+
+    columns = os.get_terminal_size().columns
+    if l*2>=columns:
+        print("\n".join(prev))
+        print("\n"+"\n".join(this))
+        print("\n"+"\n".join(neht))
+    elif l*3>=columns:
+        for i in range (0, rows):
+            print(align(prev, i, l), align(this, i, l))
+        print("\n"+"\n".join(neht))
+    else:
+        for i in range (0, rows):
+            print(align(prev, i, l), align(this, i, l), align(neht, i, l))
