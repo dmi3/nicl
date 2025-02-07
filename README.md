@@ -10,10 +10,13 @@ NiCl - nicer calendar for your terminal. Like [cal](https://linux.die.net/man/1/
     - `nicl 2012 jan`
     - ...
 * Prints colored output if terminal supports it
-* Optionally shows week numbers
+* Optionally shows week numbers `-w`
 * Optionally you can pass file with additional dates to highlight:
-  - Useful so you can download bank holidays from your local goverment site
-  - Highlight only dates important to you!
+  - Useful so you can download bank holidays:
+  - `curl -s "https://date.nager.at/api/v3/PublicHolidays/2025/DE" | jq -r .[].date > /tmp/bank_holidays.csv`
+  - Then highlight it:
+  - `nicl -w3 -f /tmp/bank_holidays.csv`
+  - Or highlight only dates important to you!
 * Hackable!
   - If don't like colors, format etc is easy to adapt this simple code for your needs
 * You can create `alias nicl2=nicl` if you are chemistry geek, and incorrect spelling of nickel chloride bothers you

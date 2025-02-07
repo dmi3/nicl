@@ -62,7 +62,7 @@ parser.add_argument('-3', '--three',  action='store_true', help='Display three m
 parser.add_argument('-w', '--weeknumbers',  action='store_true', help='Display week numbers in the calendar')
 parser.add_argument('-s', '--sunday',  action='store_true', help='Display Sunday as the first day of the week')
 parser.add_argument('-f', '--file', help='File with dates to highlight')
-parser.add_argument('-d', '--format', default='%d.%m.%Y', help='Format of date in file')
+parser.add_argument('-d', '--format', default='%Y-%m-%d', help='Format of date in file')
 args = parser.parse_args()
 
 firstweekday = 6 if args.sunday else 0
